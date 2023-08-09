@@ -1,0 +1,12 @@
+{
+    "host_ip": "192.168.9.222",
+    "host_port": "3000",
+
+    "user": "admin",
+    "password": "123456",
+
+    "source_records": "storage",
+    "stream_type": "MainStream",
+
+    "default_directory": "C:/Users/Douglas/Desktop/moovsec/iot_handler"
+}
