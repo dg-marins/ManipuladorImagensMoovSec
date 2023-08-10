@@ -27,7 +27,7 @@ class Database():
                 finaltime TEXT,
                 channel TEXT,
                 timezone TEXT,
-                filename TEXT,
+                filename TEXT UNIQUE,
                 processed TEXT,
                 inicialpath TEXT,
                 finalpath TEXT,
@@ -48,11 +48,14 @@ class Database():
 
     # Função para adicionar informações de um carro à tabela 'info_carros'
     def adicionar_info_carro(self, carro_id, starttime, finaltime, channel, timezone, filename, processed, inicialpath, finalpath):
-        self.cursor.execute('''
-            INSERT INTO info_carros (carro_id, starttime, finaltime, channel, timezone, filename, processed, inicialpath, finalpath)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (carro_id, starttime, finaltime, channel, timezone, filename, processed, inicialpath, finalpath))
-        self.conn.commit()
+        try:
+            self.cursor.execute('''
+                INSERT INTO info_carros (carro_id, starttime, finaltime, channel, timezone, filename, processed, inicialpath, finalpath)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (carro_id, starttime, finaltime, channel, timezone, filename, processed, inicialpath, finalpath))
+            self.conn.commit()
+        except sqlite3.IntegrityError:
+            print(f"Essas informacoes do carro ja existem na tabela.")
 
     # Consulta para buscar carros processados com suas informações
     def carros_processados(self, processed = 'NO'):
