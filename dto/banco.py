@@ -55,7 +55,8 @@ class Database():
             ''', (carro_id, starttime, finaltime, channel, timezone, filename, processed, inicialpath, finalpath))
             self.conn.commit()
         except sqlite3.IntegrityError:
-            print(f"Essas informacoes do carro ja existem na tabela.")
+            x = self.get_car_name_by_id(1)
+            print(f"Essas informacoes do carro {x} ja existem no banco.")
 
     # Consulta para buscar carros processados com suas informações
     def carros_processados(self, processed = 'NO'):
@@ -67,5 +68,21 @@ class Database():
         ''')
         return self.cursor.fetchall()
 
+    def get_car_id_by_name(self, car):
+        self.cursor.execute('SELECT id FROM cars WHERE car = ?', (car,))
+        result = self.cursor.fetchone()
+        if result:
+            return result[0]
+        else:
+            return None
+    
+    def get_car_name_by_id(self, car_id):
+        self.cursor.execute('SELECT car FROM cars WHERE id = ?', (car_id,))
+        result = self.cursor.fetchone()
+        if result:
+            return result[0]
+        else:
+            return None
+        
     def close_connection(self):
         self.conn.close()
