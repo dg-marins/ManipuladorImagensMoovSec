@@ -1,2 +1,9 @@
 # ManipuladorImagensMoovSec
-Este projeto foi criado com o intúito de ser um software para manipulador imagens descarregadas através do moovsec (wifi)
+Software para manipulador imagens descarregadas através do moovsec via (wifi).
+
+
+# Formato suportado
+  - AVI
+  - DAV
+
+
