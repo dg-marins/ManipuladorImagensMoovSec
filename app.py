@@ -34,35 +34,34 @@ class Main():
 
         #Inicia Database
         db = Database()
-        # db.adicionar_info_carro(1, '2023-08-08T00:30:01Z', '2023-08-08T00:45:01Z', '1', '-03:00', 'hist-33D8AF9D8702BF88-1.mp4', 'NO', '/BackupMedia/15204', '/home/publico/imagens/15204/camera1/2023-08-08')
         
         cars = os.listdir(config_data.get("default_directory"))
 
-        #Gera uma lista com as datas dos ultimos 4 dias
+        #Gera uma lista com as datas dos ultimos 10 dias
         dates = []
-        for i in range(10, -1, -1):
+        for i in range(9, -1, -1):
             date = (datetime.datetime.now() - datetime.timedelta(days=i)).strftime('%Y-%m-%d')
             dates.append(date)
 
-
+        
         for car in cars:
 
             db.adicionar_carro(car)
             car_id = db.get_car_id_by_name(car)
 
             source_car_path = os.path.join(config_data.get("default_directory"), car)
-            car_files = os.listdir(source_car_path)
+            source_car_path_files = os.listdir(source_car_path)
             
-            api_media_records = []
+            apt_media_records_data = []
             
             for date in dates:
-                api_media_records.append(api_consumer.get_media_records(car, date, 
+                apt_media_records_data.append(api_consumer.get_media_records(car, date, 
                             config_data.get("source_records"), config_data.get("stream_type")))
             
-            unified_api_media_records = list(chain(*api_media_records))
+            unified_apt_media_records_data = list(chain(*apt_media_records_data))
 
-            for file in car_files:
-                for info in unified_api_media_records:
+            for file in source_car_path_files:
+                for info in unified_apt_media_records_data:
                     file_name = os.path.basename(info['fileName'])
                     if file == file_name:
                         db.adicionar_info_carro(car_id, info['starttime'], info['endtime'], info['channel'], 
