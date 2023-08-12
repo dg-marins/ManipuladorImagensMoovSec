@@ -88,6 +88,23 @@ class Database():
         self.cursor.execute('SELECT car FROM cars')
         result = self.cursor.fetchall()
         return [row[0] for row in result]
+
+    def get_unprocessed_info(self):
+        self.cursor.execute('''
+            SELECT id, carro_id, starttime, finaltime, channel, timezone, filename, processed, inicialpath, finalpath
+            FROM info_carros
+            WHERE processed = 'NO'
+        ''')
+        result = self.cursor.fetchall()
+        return result
+    
+    def set_processed_to_yes(self, info_id):
+        self.cursor.execute('''
+            UPDATE info_carros
+            SET processed = 'YES'
+            WHERE id = ?
+        ''', (info_id,))
+        self.conn.commit()
         
     def close_connection(self):
         self.conn.close()
