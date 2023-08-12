@@ -44,7 +44,7 @@ class Database():
             ''', (car,))
             self.conn.commit()
         except sqlite3.IntegrityError:
-            print(f"Esse carro {car} ja existe na tabela.")
+            print(f"Carro {car} informado ja cadastrador.")
 
     # Função para adicionar informações de um carro à tabela 'info_carros'
     def adicionar_info_carro(self, carro_id, starttime, finaltime, channel, timezone, filename, processed, inicialpath, finalpath):
@@ -56,7 +56,7 @@ class Database():
             self.conn.commit()
         except sqlite3.IntegrityError:
             x = self.get_car_name_by_id(1)
-            print(f"Essas informacoes do carro {x} ja existem no banco.")
+            print(f"Dados informados do carro {x} ja existem no banco.")
 
     # Consulta para buscar carros processados com suas informações
     def carros_processados(self, processed = 'NO'):
@@ -83,6 +83,11 @@ class Database():
             return result[0]
         else:
             return None
+        
+    def get_all_cars(self):
+        self.cursor.execute('SELECT car FROM cars')
+        result = self.cursor.fetchall()
+        return [row[0] for row in result]
         
     def close_connection(self):
         self.conn.close()
