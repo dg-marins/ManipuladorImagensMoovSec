@@ -8,7 +8,7 @@
     "source_records": "storage",
     "stream_type": "MainStream",
 
-    "default_directory": "C:/Users/Douglas/Desktop/moovsec/iot_handler",
+    "default_directory": "C:/Users/Douglas/Desktop/moovsec/iot_handler/backup",
     "destination_directory": "C:/Users/Douglas/Desktop/home/publico/imagens"
 
 }
