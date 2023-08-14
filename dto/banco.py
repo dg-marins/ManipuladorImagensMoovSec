@@ -47,16 +47,15 @@ class Database():
             print(f"Carro {car} informado ja cadastrador.")
 
     # Função para adicionar informações de um carro à tabela 'info_carros'
-    def adicionar_info_carro(self, carro_id, starttime, finaltime, channel, timezone, filename, processed, inicialpath, finalpath):
+    def adicionar_info_carro(self, car_id, starttime, finaltime, channel, timezone, filename, processed, inicialpath, finalpath):
         try:
             self.cursor.execute('''
                 INSERT INTO info_carros (carro_id, starttime, finaltime, channel, timezone, filename, processed, inicialpath, finalpath)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ''', (carro_id, starttime, finaltime, channel, timezone, filename, processed, inicialpath, finalpath))
+            ''', (car_id, starttime, finaltime, channel, timezone, filename, processed, inicialpath, finalpath))
             self.conn.commit()
         except sqlite3.IntegrityError:
-            x = self.get_car_name_by_id(1)
-            print(f"Dados informados do carro {x} ja existem no banco.")
+            print(f"Dados informados do carro {self.get_car_name_by_id(car_id)} ja existem no banco.")
 
     # Consulta para buscar carros processados com suas informações
     def carros_processados(self, processed = 'NO'):
