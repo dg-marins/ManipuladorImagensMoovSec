@@ -84,10 +84,10 @@ class Main():
                 apt_media_records_data.append(api_consumer.get_media_records(car, date, 
                             config_data.get("source_records"), config_data.get("stream_type")))
             
-            self.unified_apt_media_records_data = list(chain(*apt_media_records_data))
+            self.unified_api_media_records_data = list(chain(*apt_media_records_data))
 
             for file in source_car_path_files:
-                for info in self.unified_apt_media_records_data:
+                for info in self.unified_api_media_records_data:
                     file_name = os.path.basename(info['fileName'])
                     if file == file_name:
                         db.adicionar_info_carro(car_id, info['starttime'], info['endtime'], info['channel'], 
