@@ -1,6 +1,7 @@
 from itertools import chain
 from consumer.consumer import Consumer
 from dto.banco import Database
+from utils.fileProcesser import FileProcesser
 import os
 import json
 import datetime
@@ -60,12 +61,15 @@ class Main():
 
         #Inicia Database
         db = Database()
+
+        #Inicial Processador arquivos
+        fp = FileProcesser()
         
         cars = os.listdir(config_data.get("default_directory"))
 
-        #Gera uma lista com as datas dos ultimos 10 dias
+        #Gera uma lista com as datas dos ultimos 7 dias
         dates = []
-        for i in range(9, -1, -1):
+        for i in range(14, -1, -1):
             date = (datetime.datetime.now() - datetime.timedelta(days=i)).strftime('%Y-%m-%d')
             dates.append(date)
 
@@ -86,6 +90,10 @@ class Main():
             
             self.unified_api_media_records_data = list(chain(*apt_media_records_data))
 
+            if len(self.unified_api_media_records_data) <= 0:
+                print(f"Nao ha videos para o carro {car} nas datas {dates}")
+                continue
+
             for file in source_car_path_files:
                 for info in self.unified_api_media_records_data:
                     file_name = os.path.basename(info['fileName'])
@@ -93,7 +101,7 @@ class Main():
                         db.adicionar_info_carro(car_id, info['starttime'], info['endtime'], info['channel'], 
                                                 info['timezone'], file_name, 'NO', os.path.dirname(info['fileName']), config_data.get('destination_directory'))
         
-        #Inicia processamento dos vídeos0
+        #Inicia processamento dos vídeos
         #Processar todos arquivos que não foram processados ainda
         unprocessed_files = db.get_unprocessed_info()
 
@@ -106,20 +114,17 @@ class Main():
             start_time = self.convert_utc_to_local_and_get_time(unprocessed_file_information[2], unprocessed_file_information[5])
             final_time = self.convert_utc_to_local_and_get_time(unprocessed_file_information[3], unprocessed_file_information[5])
             camera = 'camera' + unprocessed_file_information[4]
-
-            #Criar diretório final
-            destination_path = os.path.join(unprocessed_file_information[9], car, camera, date)
-            if not os.path.isdir(destination_path):
-                os.makedirs(destination_path)
-                print(f"Destionation Path Criada {destination_path}")
-
             
-        # #Passar para processado
+            #Criar diretório final
+            destination_path = fp.cria_diretorio(unprocessed_file_information[9], car, camera, date)
 
-        # db.set_processed_to_yes(1)
-        # db.set_processed_to_yes(3)
+            fp.cortar_video_por_minuto(unprocessed_file_information[8], destination_path, date, start_time, final_time)
+            
+            #Passar para processado
+            db.set_processed_to_yes(event_id)
+
+            print(f"Processamento do vídeo {inicial_file_name} concluido ")
         
-        db.close_connection()
 
 
 if __name__ == '__main__':
