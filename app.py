@@ -68,10 +68,7 @@ class Main():
         cars = os.listdir(config_data.get("default_directory"))
 
         #Gera uma lista com as datas dos ultimos 7 dias
-        dates = []
-        for i in range(14, -1, -1):
-            date = (datetime.datetime.now() - datetime.timedelta(days=i)).strftime('%Y-%m-%d')
-            dates.append(date)
+        dates = [(datetime.datetime.now() - datetime.timedelta(days=i)).strftime('%Y-%m-%d') for i in range(6, -1, -1)]
 
         #Cadastra todos os carros e arquivos de vídeos no banco da aplicação
         for car in cars:
@@ -91,7 +88,6 @@ class Main():
             self.unified_api_media_records_data = list(chain(*apt_media_records_data))
 
             if len(self.unified_api_media_records_data) <= 0:
-                print(f"Nao ha videos para o carro {car} nas datas {dates}")
                 continue
 
             for file in source_car_path_files:
@@ -99,7 +95,7 @@ class Main():
                     file_name = os.path.basename(info['fileName'])
                     if file == file_name:
                         db.adicionar_info_carro(car_id, info['starttime'], info['endtime'], info['channel'], 
-                                                info['timezone'], file_name, 'NO', os.path.dirname(info['fileName']), config_data.get('destination_directory'))
+                                                info['timezone'], file_name, 'NO', source_car_path, config_data.get('destination_directory'))
         
         #Inicia processamento dos vídeos
         #Processar todos arquivos que não foram processados ainda
@@ -122,9 +118,6 @@ class Main():
             
             #Passar para processado
             db.set_processed_to_yes(event_id)
-
-            print(f"Processamento do vídeo {inicial_file_name} concluido ")
-        
 
 
 if __name__ == '__main__':
