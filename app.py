@@ -103,7 +103,6 @@ class Main():
 
         for unprocessed_file_information in unprocessed_files:
 
-            inicial_file_name = unprocessed_file_information[6]
             event_id = unprocessed_file_information[0]
             car = db.get_car_name_by_id(unprocessed_file_information[1])
             date = self.get_date(unprocessed_file_information[2])
@@ -114,7 +113,7 @@ class Main():
             #Criar diretório final
             destination_path = fp.cria_diretorio(unprocessed_file_information[9], car, camera, date)
 
-            fp.cortar_video_por_minuto(unprocessed_file_information[8], destination_path, date, start_time, final_time)
+            fp.cortar_video_por_minuto(os.path.join(unprocessed_file_information[8], unprocessed_file_information[6]), destination_path, date, start_time, final_time)
             
             #Passar para processado
             db.set_processed_to_yes(event_id)

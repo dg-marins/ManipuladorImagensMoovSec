@@ -66,9 +66,9 @@ class FileProcesser():
             tempo_fim_convertido = datetime.timedelta(seconds = t2)
             tempo_fim_formatado = datetime.datetime.strptime(str(tempo_fim_convertido), "%H:%M:%S").time()
 
-            # cmnd = ['ffmpeg', '-i', full_file_path, '-b:v', '64k', '-bufsize', '64k', '-ss', str(tempo_inicio_formatado), '-to', str(tempo_fim_formatado), '-c', 'copy', target_file]
-            # p = subprocess.Popen(cmnd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            # out, err =  p.communicate()
+            cmnd = ['ffmpeg', '-i', full_file_path, '-b:v', '64k', '-bufsize', '64k', '-ss', str(tempo_inicio_formatado), '-to', str(tempo_fim_formatado), '-c', 'copy', target_file]
+            p = subprocess.Popen(cmnd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            out, err =  p.communicate()
 
             lista_novos_arquivos.append(target_file)
             
@@ -94,9 +94,9 @@ class FileProcesser():
             tempo_fim_convertido = datetime.timedelta(seconds = t2)
             tempo_fim_formatado = datetime.datetime.strptime(str(tempo_fim_convertido), "%H:%M:%S").time()
 
-            # cmnd = ['ffmpeg', '-i', full_file_path, '-b:v', '64k', '-bufsize', '64k', '-ss', str(tempo_inicio_formatado), '-to', str(tempo_fim_formatado), '-c', 'copy', target_file]
-            # p = subprocess.Popen(cmnd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            # out, err =  p.communicate()
+            cmnd = ['ffmpeg', '-i', full_file_path, '-b:v', '64k', '-bufsize', '64k', '-ss', str(tempo_inicio_formatado), '-to', str(tempo_fim_formatado), '-c', 'copy', target_file]
+            p = subprocess.Popen(cmnd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            out, err =  p.communicate()
             print(f'Video particionado: {target_file} , {video_duration_seconds} Segundos')
 
             lista_novos_arquivos.append(target_file)
