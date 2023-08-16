@@ -49,75 +49,58 @@ class Main():
 
         time_string = local_datetime.strftime('%H:%M:%S')
         return time_string
-        
+
+    def process_car(self, api_consumer, config_data, db, fp, car, dates):
+        db.adicionar_carro(car)
+        car_id = db.get_car_id_by_name(car)
+        source_car_path = os.path.join(config_data.get("default_directory"), car)
+        source_car_path_files = os.listdir(source_car_path)
+        apt_media_records_data = []
+
+        for date in dates:
+            apt_media_records_data.append(api_consumer.get_media_records(car, date,
+                                                                         config_data.get("source_records"),
+                                                                         config_data.get("stream_type")))
+        self.unified_api_media_records_data = list(chain(*apt_media_records_data))
+
+        for file in source_car_path_files:
+            self.process_file(config_data, db, car_id, source_car_path, file)
+
+    def process_file(self, config_data, db, car_id, source_car_path, file):
+        for info in self.unified_api_media_records_data:
+            file_name = os.path.basename(info['fileName'])
+            if file == file_name:
+                db.adicionar_info_carro(car_id, info['starttime'], info['endtime'], info['channel'],
+                                        info['timezone'], file_name, 'NO', source_car_path,
+                                        config_data.get('destination_directory'))
+
+    def process_unprocessed_file(self, db, fp, unprocessed_file_information):
+        event_id, car_id, utc_start_time, utc_final_time, channel = unprocessed_file_information[:5]
+        car = db.get_car_name_by_id(car_id)
+        date = self.get_date(utc_start_time)
+        start_time = self.convert_utc_to_local_and_get_time(utc_start_time, unprocessed_file_information[5])
+        final_time = self.convert_utc_to_local_and_get_time(utc_final_time, unprocessed_file_information[5])
+        camera = 'camera' + channel
+        destination_path = fp.cria_diretorio(unprocessed_file_information[9], car, camera, date)
+        fp.cortar_video_por_minuto(os.path.join(unprocessed_file_information[8], unprocessed_file_information[6]),
+                                   destination_path, date, start_time, final_time)
+        db.set_processed_to_yes(event_id)
+
     def main(self):
-
-        #Carrega arquivo de configuração
         config_data = self.read_json()
-
-        #Configura Api Coonsumer
-        api_consumer = Consumer(config_data.get("host_ip"), config_data.get("host_port"), 
-                        config_data.get("user"), config_data.get("password"))
-
-        #Inicia Database
+        api_consumer = Consumer(config_data.get("host_ip"), config_data.get("host_port"),
+                                config_data.get("user"), config_data.get("password"))
         db = Database()
-
-        #Inicial Processador arquivos
         fp = FileProcesser()
-        
         cars = os.listdir(config_data.get("default_directory"))
-
-        #Gera uma lista com as datas dos ultimos 7 dias
         dates = [(datetime.datetime.now() - datetime.timedelta(days=i)).strftime('%Y-%m-%d') for i in range(6, -1, -1)]
 
-        #Cadastra todos os carros e arquivos de vídeos no banco da aplicação
-        for car in cars:
+        # for car in cars:
+        #     self.process_car(api_consumer, config_data, db, fp, car, dates)
 
-            db.adicionar_carro(car)
-            car_id = db.get_car_id_by_name(car)
-
-            source_car_path = os.path.join(config_data.get("default_directory"), car)
-            source_car_path_files = os.listdir(source_car_path)
-            
-            apt_media_records_data = []
-            
-            for date in dates:
-                apt_media_records_data.append(api_consumer.get_media_records(car, date, 
-                            config_data.get("source_records"), config_data.get("stream_type")))
-            
-            self.unified_api_media_records_data = list(chain(*apt_media_records_data))
-
-            if len(self.unified_api_media_records_data) <= 0:
-                continue
-
-            for file in source_car_path_files:
-                for info in self.unified_api_media_records_data:
-                    file_name = os.path.basename(info['fileName'])
-                    if file == file_name:
-                        db.adicionar_info_carro(car_id, info['starttime'], info['endtime'], info['channel'], 
-                                                info['timezone'], file_name, 'NO', source_car_path, config_data.get('destination_directory'))
-        
-        #Inicia processamento dos vídeos
-        #Processar todos arquivos que não foram processados ainda
         unprocessed_files = db.get_unprocessed_info()
-
         for unprocessed_file_information in unprocessed_files:
-
-            event_id = unprocessed_file_information[0]
-            car = db.get_car_name_by_id(unprocessed_file_information[1])
-            date = self.get_date(unprocessed_file_information[2])
-            start_time = self.convert_utc_to_local_and_get_time(unprocessed_file_information[2], unprocessed_file_information[5])
-            final_time = self.convert_utc_to_local_and_get_time(unprocessed_file_information[3], unprocessed_file_information[5])
-            camera = 'camera' + unprocessed_file_information[4]
-            
-            #Criar diretório final
-            destination_path = fp.cria_diretorio(unprocessed_file_information[9], car, camera, date)
-
-            fp.cortar_video_por_minuto(os.path.join(unprocessed_file_information[8], unprocessed_file_information[6]), destination_path, date, start_time, final_time)
-            
-            #Passar para processado
-            db.set_processed_to_yes(event_id)
-
+            self.process_unprocessed_file(db, fp, unprocessed_file_information)
 
 if __name__ == '__main__':
     mr = Main()
