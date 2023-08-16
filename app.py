@@ -95,8 +95,8 @@ class Main():
         cars = os.listdir(config_data.get("default_directory"))
         dates = [(datetime.datetime.now() - datetime.timedelta(days=i)).strftime('%Y-%m-%d') for i in range(6, -1, -1)]
 
-        # for car in cars:
-        #     self.process_car(api_consumer, config_data, db, fp, car, dates)
+        for car in cars:
+            self.process_car(api_consumer, config_data, db, fp, car, dates)
 
         unprocessed_files = db.get_unprocessed_info()
         for unprocessed_file_information in unprocessed_files:
