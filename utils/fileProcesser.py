@@ -58,6 +58,7 @@ class FileProcesser():
             target_file = os.path.join(destination_path, target_file_formatted_time + '.mp4')
 
             if os.path.isfile(target_file):
+                print(f'Existe: {target_file}')
                 continue
 
             tempo_inicio_convertido = datetime.timedelta(seconds = t1)
@@ -86,7 +87,7 @@ class FileProcesser():
 
             if os.path.isfile(target_file):
                 print(f'Existe: {target_file}')
-                pass
+                return lista_novos_arquivos
 
             tempo_inicio_convertido = datetime.timedelta(seconds = t1)
             tempo_inicio_formatado = datetime.datetime.strptime(str(tempo_inicio_convertido), "%H:%M:%S").time()
@@ -97,7 +98,6 @@ class FileProcesser():
             cmnd = ['ffmpeg', '-i', full_file_path, '-b:v', '64k', '-bufsize', '64k', '-ss', str(tempo_inicio_formatado), '-to', str(tempo_fim_formatado), '-c', 'copy', target_file]
             p = subprocess.Popen(cmnd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             out, err =  p.communicate()
-            print(f'Video particionado: {target_file} , {video_duration_seconds} Segundos')
 
             lista_novos_arquivos.append(target_file)
             
@@ -105,4 +105,5 @@ class FileProcesser():
             time = time + datetime.timedelta(minutes=1)
             formatted_time = time.strftime("%Y%m%d%H%M%S")
 
+        print(f'{os.path.basename(full_file_path)} particionado')
         return lista_novos_arquivos

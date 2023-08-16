@@ -50,57 +50,59 @@ class Main():
         time_string = local_datetime.strftime('%H:%M:%S')
         return time_string
 
-    def process_car(self, api_consumer, config_data, db, fp, car, dates):
-        db.adicionar_carro(car)
-        car_id = db.get_car_id_by_name(car)
-        source_car_path = os.path.join(config_data.get("default_directory"), car)
-        source_car_path_files = os.listdir(source_car_path)
+    def register_car_and_get_files_info(self, api_consumer, config_data, car, dates):
+        self.db.adicionar_carro(car)
+        
         apt_media_records_data = []
 
         for date in dates:
             apt_media_records_data.append(api_consumer.get_media_records(car, date,
                                                                          config_data.get("source_records"),
                                                                          config_data.get("stream_type")))
-        self.unified_api_media_records_data = list(chain(*apt_media_records_data))
+        unified_api_media_records_data = list(chain(*apt_media_records_data))
 
-        for file in source_car_path_files:
-            self.process_file(config_data, db, car_id, source_car_path, file)
+        return {os.path.basename(record['fileName']): record for record in unified_api_media_records_data}
+                
+    def process_file(self, destination_directory, car_id, source_car_path, file_info):
+        self.db.adicionar_info_carro(car_id, file_info['starttime'], file_info['endtime'], file_info['channel'],
+                                file_info['timezone'], os.path.basename(file_info['fileName']), 'NO', source_car_path,
+                                destination_directory)
 
-    def process_file(self, config_data, db, car_id, source_car_path, file):
-        for info in self.unified_api_media_records_data:
-            file_name = os.path.basename(info['fileName'])
-            if file == file_name:
-                db.adicionar_info_carro(car_id, info['starttime'], info['endtime'], info['channel'],
-                                        info['timezone'], file_name, 'NO', source_car_path,
-                                        config_data.get('destination_directory'))
-
-    def process_unprocessed_file(self, db, fp, unprocessed_file_information):
+    def process_unprocessed_file(self, unprocessed_file_information):
         event_id, car_id, utc_start_time, utc_final_time, channel = unprocessed_file_information[:5]
-        car = db.get_car_name_by_id(car_id)
+        car = self.db.get_car_name_by_id(car_id)
         date = self.get_date(utc_start_time)
         start_time = self.convert_utc_to_local_and_get_time(utc_start_time, unprocessed_file_information[5])
         final_time = self.convert_utc_to_local_and_get_time(utc_final_time, unprocessed_file_information[5])
         camera = 'camera' + channel
-        destination_path = fp.cria_diretorio(unprocessed_file_information[9], car, camera, date)
-        fp.cortar_video_por_minuto(os.path.join(unprocessed_file_information[8], unprocessed_file_information[6]),
+        destination_path = self.fp.cria_diretorio(unprocessed_file_information[9], car, camera, date)
+        self.fp.cortar_video_por_minuto(os.path.join(unprocessed_file_information[8], unprocessed_file_information[6]),
                                    destination_path, date, start_time, final_time)
-        db.set_processed_to_yes(event_id)
+        self.db.set_processed_to_yes(event_id)
 
     def main(self):
         config_data = self.read_json()
         api_consumer = Consumer(config_data.get("host_ip"), config_data.get("host_port"),
                                 config_data.get("user"), config_data.get("password"))
-        db = Database()
-        fp = FileProcesser()
+        self.db = Database()
+        self.fp = FileProcesser()
         cars = os.listdir(config_data.get("default_directory"))
         dates = [(datetime.datetime.now() - datetime.timedelta(days=i)).strftime('%Y-%m-%d') for i in range(6, -1, -1)]
 
         for car in cars:
-            self.process_car(api_consumer, config_data, db, fp, car, dates)
+            dict_unified_api_informations = self.register_car_and_get_files_info(api_consumer, config_data, car, dates)
+            source_car_path_files = os.listdir(os.path.join(config_data.get("default_directory"), car))
 
-        unprocessed_files = db.get_unprocessed_info()
+            for file in source_car_path_files:
+                x = dict_unified_api_informations.get(file)
+                if x:
+                    self.process_file(config_data.get("destination_directory"), self.db.get_car_id_by_name(car), os.path.join(config_data.get("default_directory"), car), x)
+                else:
+                    print("Arquivo nao localizado na API")
+
+        unprocessed_files = self.db.get_unprocessed_info()
         for unprocessed_file_information in unprocessed_files:
-            self.process_unprocessed_file(db, fp, unprocessed_file_information)
+            self.process_unprocessed_file(unprocessed_file_information)
 
 if __name__ == '__main__':
     mr = Main()
