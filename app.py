@@ -65,8 +65,6 @@ class Main():
             return None
 
         unified_api_media_records_data = list(chain(*apt_media_records_data))
-        #x = {os.path.basename(record['fileName']): record for record in unified_api_media_records_data}
-        #return x
 
         dict_unified_api_informations = {}
         for record in unified_api_media_records_data:
@@ -103,7 +101,9 @@ class Main():
         self.db = Database()
         self.fp = FileProcesser()
         cars = os.listdir(config_data.get("default_directory"))
-        dates = [(datetime.datetime.now() - datetime.timedelta(days=i)).strftime('%Y-%m-%d') for i in range(4, -1, -1)]
+        dates = [(datetime.datetime.now() - datetime.timedelta(days=i)).strftime('%Y-%m-%d') for i in range(config_data.get("days_to_process")-1, -1, -1)]
+
+        print(dates)
 
         for car in cars:
             print(f"Processando {car}")
