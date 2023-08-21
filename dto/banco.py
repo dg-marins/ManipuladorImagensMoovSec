@@ -35,6 +35,15 @@ class Database():
             )
         ''')
 
+        self.cursor.execute('''
+            CREATE TABLE IF NOT EXISTS videos (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                info_carro_id INTEGER,
+                filename TEXT UNIQUE,
+                FOREIGN KEY (info_carro_id) REFERENCES info_carros (id)
+            )
+        ''')
+
     # Função para adicionar um carro à tabela 'carros'
     def adicionar_carro(self, car):
         try:
@@ -56,6 +65,11 @@ class Database():
             self.conn.commit()
         except sqlite3.IntegrityError:
             pass
+    
+    def registrar_video(self, info_carro_id, filename):
+        self.cursor.execute('''
+            INSERT INTO videos (info_carro_id, filename) VALUES (?, ?)
+        ''', (info_carro_id, filename))
 
     # Consulta para buscar carros processados com suas informações
     def carros_processados(self, processed = 'NO'):
