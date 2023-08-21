@@ -60,7 +60,6 @@ class Main():
                                                                          config_data.get("source_records"),
                                                                          config_data.get("stream_type")))
 
-
         if all(item is None for item in apt_media_records_data):
             return None
 
@@ -116,9 +115,10 @@ class Main():
             for file in source_car_path_files:
                 x = dict_unified_api_informations.get(file)
                 if x:
-                    self.process_file(config_data.get("destination_directory"), self.db.get_car_id_by_name(car), os.path.join(config_data.get("default_directory"), car), x)
+                    destination_path = os.path.join(config_data.get("destination_directory"), car, "camera" + str(x.get("channel")), self.get_date(x.get("starttime")))
+                    self.process_file(destination_path, self.db.get_car_id_by_name(car), os.path.join(config_data.get("default_directory"), car), x)
                 #else:
-                #    print("Arquivo nao localizado na API")
+                #    print("Arquivo source nao localizado nas informacoes da API")
 
         unprocessed_files = self.db.get_unprocessed_info()
         for unprocessed_file_information in unprocessed_files:
