@@ -90,11 +90,11 @@ class Main():
         camera = 'camera' + channel
         destination_path = self.fp.cria_diretorio(unprocessed_file_information[9], car, camera, date)
         new_videos_created = self.fp.cortar_video_por_minuto(os.path.join(unprocessed_file_information[8], unprocessed_file_information[6]),
-                                   destination_path, date, start_time, final_time, event_id)
+                                   destination_path, date, start_time, final_time)
         
         for new_video_file_name in new_videos_created:
             self.db.registrar_video(event_id, new_video_file_name)
-            
+
         self.db.set_processed_to_yes(event_id)
 
     def main(self):
