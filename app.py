@@ -1,4 +1,5 @@
 from itertools import chain
+import time
 from consumer.consumer import Consumer
 from dto.banco import Database
 from utils.fileProcesser import FileProcesser
@@ -81,12 +82,14 @@ class Main():
 
     def process_unprocessed_file(self, unprocessed_file_information):
         event_id, car_id, utc_start_time, utc_final_time, channel = unprocessed_file_information[:5]
-        car = self.db.get_car_name_by_id(car_id)
         date = self.get_date(utc_start_time)
         start_time = self.convert_utc_to_local_and_get_time(utc_start_time, unprocessed_file_information[5])
         final_time = self.convert_utc_to_local_and_get_time(utc_final_time, unprocessed_file_information[5])
-        camera = 'camera' + channel
-        destination_path = self.fp.cria_diretorio(unprocessed_file_information[9], car, camera, date)
+        destination_path = unprocessed_file_information[9]
+        
+        if not os.path.isdir(destination_path):
+            os.makedirs(destination_path)
+
         new_videos_created = self.fp.cortar_video_por_minuto(os.path.join(unprocessed_file_information[8], unprocessed_file_information[6]),
                                    destination_path, date, start_time, final_time)
         
@@ -144,5 +147,15 @@ class Main():
             self.process_unprocessed_file(unprocessed_file_information)
 
 if __name__ == '__main__':
-    mr = Main()
-    mr.main()
+
+    while True:
+        try:
+            mr = Main()
+            mr.main()
+        
+        except Exception as e:
+            print(f'Erro: {e}')
+            time.sleep(3)
+
+        #Aguarda 30 minutos ate o proximo loop
+        time.sleep(1800)
