@@ -102,6 +102,8 @@ class Main():
         api_consumer = Consumer(config_data.get("host_ip"), config_data.get("host_port"),
                                 config_data.get("user"), config_data.get("password"))
         self.db = Database()
+        self.db.create_database()
+        
         self.fp = FileProcesser()
         cars = os.listdir(config_data.get("default_directory"))
         dates = [(datetime.datetime.now() - datetime.timedelta(days=i)).strftime('%Y-%m-%d') for i in range(config_data.get("days_to_process")-1, -1, -1)]
