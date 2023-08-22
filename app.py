@@ -50,9 +50,7 @@ class Main():
         time_string = local_datetime.strftime('%H:%M:%S')
         return time_string
 
-    def register_car_and_get_files_info(self, api_consumer, config_data, car, dates):
-        self.db.adicionar_carro(car)
-        
+    def get_videos_found_in_api(self, api_consumer, config_data, car, dates):
         apt_media_records_data = []
 
         for date in dates:
@@ -76,7 +74,7 @@ class Main():
 
         return dict_unified_api_informations
 
-    def process_file(self, destination_directory, car_id, source_car_path, file_info):
+    def set_unprocessed_file(self, destination_directory, car_id, source_car_path, file_info):
         self.db.adicionar_info_carro(car_id, file_info['starttime'], file_info['endtime'], file_info['channel'],
                                 file_info['timezone'], os.path.basename(file_info['fileName']), 'NO', source_car_path,
                                 destination_directory)
@@ -108,27 +106,36 @@ class Main():
         cars = os.listdir(config_data.get("default_directory"))
         dates = [(datetime.datetime.now() - datetime.timedelta(days=i)).strftime('%Y-%m-%d') for i in range(config_data.get("days_to_process")-1, -1, -1)]
 
-        print(dates)
-
+        #Registra os carros do diretorio default no banco
         for car in cars:
+            self.db.register_car(car)
+
+        for car in self.db.get_all_cars():
             print(f"Processando {car}")
-            dict_unified_api_informations = self.register_car_and_get_files_info(api_consumer, config_data, car, dates)
+
+            #Pega videos encontrador na API com as datas informadas
+            dict_unified_api_informations = self.get_videos_found_in_api(api_consumer, config_data, car, dates)
             if dict_unified_api_informations == None:
                 continue 
-           
+        
+            #Lista os arquivos encontrados no diretorio do carro
             source_car_path_files = os.listdir(os.path.join(config_data.get("default_directory"), car))
+            if len(source_car_path_files) <= 0:
+                (f"[{car}] Não há videos descarregados")
+                continue
 
+            #Compara se o arquivo do diretorio encontra-se no registo da API
             for file in source_car_path_files:
                 x = dict_unified_api_informations.get(file)
                 if x:
                     destination_path = os.path.join(config_data.get("destination_directory"), car, "camera" + str(x.get("channel")), self.get_date(x.get("starttime")))
-                    self.process_file(destination_path, self.db.get_car_id_by_name(car), os.path.join(config_data.get("default_directory"), car), x)
-                #else:
-                #    print("Arquivo source nao localizado nas informacoes da API")
+                    self.set_unprocessed_file(destination_path, self.db.get_car_id_by_name(car), os.path.join(config_data.get("default_directory"), car), x)
+                else:
+                   print(f"[{car}][{file}] Não há dados do arquivo nas dastas solicitadas")
 
-        unprocessed_files = self.db.get_unprocessed_info()
-        for unprocessed_file_information in unprocessed_files:
-            self.process_unprocessed_file(unprocessed_file_information)
+            # unprocessed_files = self.db.get_unprocessed_info()
+            # for unprocessed_file_information in unprocessed_files:
+            #     self.process_unprocessed_file(unprocessed_file_information)
 
 if __name__ == '__main__':
     mr = Main()
