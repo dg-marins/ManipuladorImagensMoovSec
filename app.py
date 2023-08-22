@@ -95,6 +95,30 @@ class Main():
 
         self.db.set_processed_to_yes(event_id)
 
+    def process_car_videos(self, api_consumer, config_data, car, dates):
+
+        print(f"Processando {car}")
+
+        #Pega videos encontrador na API com as datas informadas
+        dict_unified_api_informations = self.get_videos_found_in_api(api_consumer, config_data, car, dates)
+        if dict_unified_api_informations == None:
+            return 
+    
+        #Lista os arquivos encontrados no diretorio do carro
+        source_car_path_files = os.listdir(os.path.join(config_data.get("default_directory"), car))
+        if len(source_car_path_files) <= 0:
+            (f"[{car}] Não há videos descarregados")
+            return
+
+        #Compara se o arquivo do diretorio encontra-se no registo da API
+        for file in source_car_path_files:
+            x = dict_unified_api_informations.get(file)
+            if x:
+                destination_path = os.path.join(config_data.get("default_directory"), car, "camera" + str(x.get("channel")), self.get_date(x.get("starttime")))
+                self.set_unprocessed_file(destination_path, self.db.get_car_id_by_name(car), os.path.join(config_data.get("default_directory"), car), x)
+            else:
+                print(f"[{car}][{file}] Não há dados do arquivo nas dastas solicitadas")
+
     def main(self):
         config_data = self.read_json()
         api_consumer = Consumer(config_data.get("host_ip"), config_data.get("host_port"),
@@ -110,32 +134,14 @@ class Main():
         for car in cars:
             self.db.register_car(car)
 
-        for car in self.db.get_all_cars():
-            print(f"Processando {car}")
+        registered_cars = self.db.get_all_cars()
+        for car in registered_cars:
+            self.process_car_videos(api_consumer, config_data, car, dates)
 
-            #Pega videos encontrador na API com as datas informadas
-            dict_unified_api_informations = self.get_videos_found_in_api(api_consumer, config_data, car, dates)
-            if dict_unified_api_informations == None:
-                continue 
-        
-            #Lista os arquivos encontrados no diretorio do carro
-            source_car_path_files = os.listdir(os.path.join(config_data.get("default_directory"), car))
-            if len(source_car_path_files) <= 0:
-                (f"[{car}] Não há videos descarregados")
-                continue
-
-            #Compara se o arquivo do diretorio encontra-se no registo da API
-            for file in source_car_path_files:
-                x = dict_unified_api_informations.get(file)
-                if x:
-                    destination_path = os.path.join(config_data.get("destination_directory"), car, "camera" + str(x.get("channel")), self.get_date(x.get("starttime")))
-                    self.set_unprocessed_file(destination_path, self.db.get_car_id_by_name(car), os.path.join(config_data.get("default_directory"), car), x)
-                else:
-                   print(f"[{car}][{file}] Não há dados do arquivo nas dastas solicitadas")
-
-            # unprocessed_files = self.db.get_unprocessed_info()
-            # for unprocessed_file_information in unprocessed_files:
-            #     self.process_unprocessed_file(unprocessed_file_information)
+        # #Inicia processo de particionamento dos vídeos
+        # unprocessed_files = self.db.get_unprocessed_info()
+        # for unprocessed_file_information in unprocessed_files:
+        #     self.process_unprocessed_file(unprocessed_file_information)
 
 if __name__ == '__main__':
     mr = Main()
