@@ -49,7 +49,7 @@ class Database():
             ''')
 
     # Função para adicionar um carro à tabela 'carros'
-    def adicionar_carro(self, car):
+    def register_car(self, car):
         
         with self.conn:
             cursor = self.conn.cursor()
