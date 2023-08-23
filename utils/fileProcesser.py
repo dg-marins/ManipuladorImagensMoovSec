@@ -10,17 +10,6 @@ class FileProcesser():
 
     def __init__(self):
         pass
-    
-    def cria_diretorio(self, destination_path, carro, camera, data):
-        """
-        Cria diretorio para armazenar os videos com nomes modificados
-        """
-        path = os.path.join(destination_path, carro, camera, data)
-          
-        if not os.path.isdir(path):
-            os.makedirs(path)
-
-        return path
 
     def calculate_time_difference(self, start_time_str, end_time_str):
         start_time = datetime.datetime.strptime(start_time_str, '%H:%M:%S')
