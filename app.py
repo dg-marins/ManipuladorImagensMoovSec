@@ -98,7 +98,7 @@ class Main():
 
         self.db.set_processed_to_yes(event_id)
 
-    def process_car_videos(self, api_consumer, config_data, car, dates):
+    def register_car_videos_to_db(self, api_consumer, config_data, car, dates):
 
         print(f"Processando {car}")
 
@@ -139,7 +139,7 @@ class Main():
 
         registered_cars = self.db.get_all_cars()
         for car in registered_cars:
-            self.process_car_videos(api_consumer, config_data, car, dates)
+            self.register_car_videos_to_db(api_consumer, config_data, car, dates)
 
         #Inicia processo de particionamento dos vídeos
         unprocessed_files = self.db.get_unprocessed_info()
