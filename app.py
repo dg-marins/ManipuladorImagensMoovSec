@@ -30,6 +30,10 @@ class Main():
         # Converter a string para um objeto datetime
         parsed_datetime = datetime.datetime.strptime(source_date, '%Y-%m-%dT%H:%M:%SZ')
 
+        if 0 <= parsed_datetime.hour < 3:
+            # Subtrair um dia
+            parsed_datetime -= datetime.timedelta(days=1)
+
         # Retorna a data formatada como 'yyyy-mm-dd'
         return parsed_datetime.strftime('%Y-%m-%d')
 
@@ -137,6 +141,7 @@ class Main():
         for car in cars:
             self.db.register_car(car)
 
+        #Registra todos os videos pertencentes aos carros no banco
         registered_cars = self.db.get_all_cars()
         for car in registered_cars:
             self.process_car_videos(api_consumer, config_data, car, dates)
