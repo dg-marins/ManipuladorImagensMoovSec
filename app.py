@@ -74,14 +74,11 @@ class Main():
                 file_name = os.path.basename(record['fileName'])
                 dict_unified_api_informations[file_name] = record
 
-            else:
-                print(record)
-
         return dict_unified_api_informations
 
     def set_unprocessed_file(self, destination_directory, car_id, source_car_path, file_info):
         self.db.adicionar_info_carro(car_id, file_info['starttime'], file_info['endtime'], file_info['channel'],
-                                file_info['timezone'], os.path.basename(file_info['fileName']), 'NO', source_car_path,
+                                file_info['timezone'], os.path.basename(file_info['fileName']), 'NO', 'NO',source_car_path,
                                 destination_directory)
 
     def process_unprocessed_file(self, unprocessed_file_information):
@@ -126,6 +123,16 @@ class Main():
             # else:
             #     print(f"[{car}][{file}] Nao ha dados do arquivo nas dastas solicitadas")
 
+    def delete_file(self, file_information):
+        event_id = file_information[0]
+        file_path = os.path.join(file_information[9], file_information[6])
+        
+        if os.path.isfile(file_path):
+            # os.remove(file_path)
+            print(f'Removido: {file_path}')
+            self.db.set_erased_status(event_id)
+    
+    
     def main(self):
         config_data = self.read_json()
         api_consumer = Consumer(config_data.get("host_ip"), config_data.get("host_port"),
@@ -137,6 +144,7 @@ class Main():
         cars = os.listdir(config_data.get("default_directory"))
         dates = [(datetime.datetime.now() - datetime.timedelta(days=i)).strftime('%Y-%m-%d') for i in range(config_data.get("days_to_process")-1, -1, -1)]
 
+        print(f'Registrando carros no banco ...')
         #Registra os carros do diretorio default no banco
         for car in cars:
             self.db.register_car(car)
@@ -146,10 +154,15 @@ class Main():
         for car in registered_cars:
             self.process_car_videos(api_consumer, config_data, car, dates)
 
-        #Inicia processo de particionamento dos vídeos
+        #Inicia processo de particionamento e organização dos vídeos
         unprocessed_files = self.db.get_unprocessed_info()
         for unprocessed_file_information in unprocessed_files:
             self.process_unprocessed_file(unprocessed_file_information)
+
+        # #Inicia processo de limpeza dos vídeos processados
+        files_to_delete = self.db.get_files_to_delete()
+        for file in files_to_delete:
+            self.delete_file(file)
 
 if __name__ == '__main__':
 

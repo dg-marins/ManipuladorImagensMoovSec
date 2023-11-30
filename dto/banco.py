@@ -33,6 +33,7 @@ class Database():
                     timezone TEXT,
                     filename TEXT UNIQUE,
                     processed TEXT,
+                    erased TEXT,
                     inicialpath TEXT,
                     finalpath TEXT,
                     FOREIGN KEY (carro_id) REFERENCES carros (id)
@@ -63,14 +64,14 @@ class Database():
                 return
 
     # Função para adicionar informações de um carro à tabela 'info_carros'
-    def adicionar_info_carro(self, car_id, starttime, finaltime, channel, timezone, filename, processed, inicialpath, finalpath):
+    def adicionar_info_carro(self, car_id, starttime, finaltime, channel, timezone, filename, processed, erased, inicialpath, finalpath):
         with self.conn:
             cursor = self.conn.cursor()
             try:
                 cursor.execute('''
-                    INSERT INTO info_carros (carro_id, starttime, finaltime, channel, timezone, filename, processed, inicialpath, finalpath)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                ''', (car_id, starttime, finaltime, channel, timezone, filename, processed, inicialpath, finalpath))
+                    INSERT INTO info_carros (carro_id, starttime, finaltime, channel, timezone, filename, processed, erased, inicialpath, finalpath)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ''', (car_id, starttime, finaltime, channel, timezone, filename, processed, erased, inicialpath, finalpath))
                 self.conn.commit()
             except sqlite3.IntegrityError:
                 pass
@@ -82,7 +83,6 @@ class Database():
                 INSERT INTO videos (info_carro_id, filename) VALUES (?, ?)
             ''', (info_carro_id, filename))
 
-    # Consulta para buscar carros processados com suas informações
     def carros_processados(self, processed = 'NO'):
         with self.conn:
             cursor = self.conn.cursor()
@@ -141,6 +141,28 @@ class Database():
                 WHERE id = ?
             ''', (info_id,))
             self.conn.commit()
+
+    def set_erased_status(self, info_id):
+        with self.conn:
+            cursor = self.conn.cursor()
+            # Atualizar o status 'erased' para 'YES' com base no info_id
+            cursor.execute('''
+                UPDATE info_carros
+                SET erased = 'YES'
+                WHERE id = ?
+            ''', (info_id,))
+            self.conn.commit()
+
+    def get_files_to_delete(self):
+        with self.conn:
+            cursor = self.conn.cursor()
+            cursor.execute('''
+                SELECT id, carro_id, starttime, finaltime, channel, timezone, filename, processed, erased,inicialpath, finalpath
+                FROM info_carros
+                WHERE processed = 'YES' AND erased = 'NO'
+            ''')
+            result = cursor.fetchall()
+            return result
         
     def close_connection(self):
         self.conn.close()
