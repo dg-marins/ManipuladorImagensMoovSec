@@ -128,7 +128,7 @@ class Main():
         file_path = os.path.join(file_information[9], file_information[6])
         
         if os.path.isfile(file_path):
-            # os.remove(file_path)
+            os.remove(file_path)
             print(f'Removido: {file_path}')
             self.db.set_erased_status(event_id)
     
@@ -154,7 +154,7 @@ class Main():
         for car in registered_cars:
             self.process_car_videos(api_consumer, config_data, car, dates)
 
-        #Inicia processo de particionamento e organização dos vídeos
+        # #Inicia processo de particionamento e organização dos vídeos
         unprocessed_files = self.db.get_unprocessed_info()
         for unprocessed_file_information in unprocessed_files:
             self.process_unprocessed_file(unprocessed_file_information)
