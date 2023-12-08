@@ -160,7 +160,7 @@ class Main():
             self.process_unprocessed_file(unprocessed_file_information)
 
         # #Inicia processo de limpeza dos vídeos processados
-        files_to_delete = self.db.get_files_to_delete()
+        files_to_delete = self.db.get_files_to_delete(config_data.get("dias_para_manter"))
         for file in files_to_delete:
             self.delete_file(file)
 

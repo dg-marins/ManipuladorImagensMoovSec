@@ -10,6 +10,8 @@
     "days_to_process": 20,
 
     "default_directory": "C:/Users/Douglas/Desktop/moovsec/iot_handler/backup",
-    "destination_directory": "C:/Users/Douglas/Desktop/home/publico/imagens"
+    "destination_directory": "C:/Users/Douglas/Desktop/home/publico/imagens",
+
+    "dias_para_manter": 7
 
 }

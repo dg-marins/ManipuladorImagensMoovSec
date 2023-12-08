@@ -153,13 +153,13 @@ class Database():
             ''', (info_id,))
             self.conn.commit()
 
-    def get_files_to_delete(self):
+    def get_files_to_delete(self, days_to_keep):
         with self.conn:
             cursor = self.conn.cursor()
-            cursor.execute('''
-                SELECT id, carro_id, starttime, finaltime, channel, timezone, filename, processed, erased,inicialpath, finalpath
+            cursor.execute(f'''
+                SELECT id, carro_id, starttime, finaltime, channel, timezone, filename, processed, erased, inicialpath, finalpath
                 FROM info_carros
-                WHERE processed = 'YES' AND erased = 'NO'
+                WHERE processed = 'YES' AND erased = 'NO' AND datetime(starttime) < datetime('now', '-{days_to_keep} days')
             ''')
             result = cursor.fetchall()
             return result
