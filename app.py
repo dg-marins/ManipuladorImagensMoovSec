@@ -139,11 +139,13 @@ class Main():
 
                         if taskInfo.get("status") == "SUCCESS" and data.get("vehiclePlate") == car:
                             
-                            media_info = taskInfo.get("media")[0]
+                            media_info = taskInfo.get("media")
 
-                            destination_path = os.path.join(config_data.get("destination_directory"), car, "camera" + str(data.get("channels")[0]), self.get_date(media_info.get("startTime")))
-                            self.set_unprocessed_file(destination_path, self.db.get_car_id_by_name(car), os.path.join(config_data.get("default_directory"), folder, car), 
-                                                      media_info.get("startTime"), media_info.get("endTime"), data.get("channels")[0], data.get("timezone"), media_info.get("fileName"))
+                            for x in media_info:
+                                if x.get("fileName") and x.get("fileName"):
+                                    destination_path = os.path.join(config_data.get("destination_directory"), car, "camera" + str(data.get("channels")[0]), self.get_date(x.get("startTime")))
+                                    self.set_unprocessed_file(destination_path, self.db.get_car_id_by_name(car), os.path.join(config_data.get("default_directory"), folder, car), 
+                                                        x.get("startTime"), x.get("endTime"), data.get("channels")[0], data.get("timezone"), x.get("fileName"))
 
     def delete_file(self, file_information):
         event_id = file_information[0]
@@ -207,15 +209,14 @@ class Main():
 if __name__ == '__main__':
 
     mr = Main()
-
+    
     while True:
+        # try:
+        mr.main()
         
-        try:
-            mr.main()
-        
-        except Exception as e:
-            print(f'Erro: {e}')
-            time.sleep(3)
+        # except Exception as e:
+        #     print(f'Erro: {e}')
+        #     time.sleep(3)
 
         #Aguarda 30 minutos ate o proximo loop
         time.sleep(1800)
