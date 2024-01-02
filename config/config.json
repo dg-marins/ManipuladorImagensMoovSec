@@ -1,15 +1,17 @@
 {
     "host_ip": "192.168.9.222",
-    "host_port": "3000",
+    "host_moovsec_port": "5000",
+    "host_iot_handler_port": "3000",
 
     "user": "admin",
     "password": "123456",
 
     "source_records": "storage",
     "stream_type": "MainStream",
-    "days_to_process": 20,
+    "days_to_process": 30,
 
-    "default_directory": "C:/Users/Douglas/Desktop/moovsec/iot_handler/backup",
+    "default_directory": "C:/Users/Douglas/Desktop/moovsec/iot_handler",
+    "folders_to_process": ["backup", "download"],
     "destination_directory": "C:/Users/Douglas/Desktop/home/publico/imagens",
 
     "dias_para_manter": 7

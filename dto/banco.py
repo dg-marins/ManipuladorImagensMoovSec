@@ -18,7 +18,8 @@ class Database():
             cursor.execute('''
                 CREATE TABLE IF NOT EXISTS cars (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    car TEXT UNIQUE
+                    car TEXT UNIQUE,
+                    vehicle_id TEXT
                 )
             ''')
 
@@ -50,15 +51,15 @@ class Database():
             ''')
 
     # Função para adicionar um carro à tabela 'carros'
-    def register_car(self, car):
+    def register_car(self, car, vehicle_id):
         
         with self.conn:
             cursor = self.conn.cursor()
             try:
                 cursor.execute('''
-                    INSERT INTO cars (car)
-                    VALUES (?)
-                ''', (car,))
+                    INSERT INTO cars (car, vehicle_id)
+                    VALUES (?,?)
+                ''', (car, vehicle_id))
                 self.conn.commit()
             except sqlite3.IntegrityError:
                 return
@@ -117,9 +118,9 @@ class Database():
     def get_all_cars(self):
         with self.conn:
             cursor = self.conn.cursor()
-            cursor.execute('SELECT car FROM cars')
+            cursor.execute('SELECT car, vehicle_id FROM cars')
             result = cursor.fetchall()
-            return [row[0] for row in result]
+            return result
 
     def get_unprocessed_info(self):
         with self.conn:
