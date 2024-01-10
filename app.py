@@ -132,9 +132,10 @@ class Main():
             
             elif folder == "download":
                 download_task_data = api_consumer.get_download_task(vehicle_id, dates[0], dates[-1])
-                
+                task_list = download_task_data.get("list")
+
                 for file in source_car_path_files:
-                    for data in download_task_data:
+                    for data in task_list:
                         taskInfo = data.get("taskInfo")
 
                         if taskInfo.get("status") == "SUCCESS" and data.get("vehiclePlate") == car:
