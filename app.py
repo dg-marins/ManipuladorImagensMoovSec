@@ -193,7 +193,8 @@ class Main():
 
         for car in cars:
             for car_information in api_vehicles_data:
-                if car_information.get("plate") == car:
+                deviceSerial = car_information.get("deviceList")[0].get("deviceSerial")
+                if car_information.get("plate") == car or deviceSerial == car:
                     self.db.register_car(car, car_information.get("_id"))
 
         #Registra todos os videos pertencentes aos carros no banco
