@@ -90,6 +90,7 @@ class Main():
         if not os.path.isdir(destination_path):
             os.makedirs(destination_path)
 
+        print(f"Iniciando processo de particionamento file {unprocessed_file_information[6]}")
         new_videos_created = self.fp.cortar_video_por_minuto(os.path.join(unprocessed_file_information[8], unprocessed_file_information[6]),
                                    destination_path, date, start_time, final_time)
         
@@ -99,8 +100,6 @@ class Main():
         self.db.set_processed_to_yes(event_id)
 
     def process_car_videos(self, api_consumer, config_data, car, vehicle_id, dates):
-
-        print(f"Processando {car}")
     
         #Lista os arquivos encontrados no diretorio do carro
         for folder in config_data.get("folders_to_process"):
@@ -125,10 +124,11 @@ class Main():
                     x = dict_unified_api_informations.get(file)
                     if x:
                         destination_path = os.path.join(config_data.get("destination_directory"), car, "camera" + str(x.get("channel")), self.get_date(x.get("starttime")))
+
+                        print(f"Arquivo {file} do carro {car} registrado no banco")
+
                         self.set_unprocessed_file(destination_path, self.db.get_car_id_by_name(car), os.path.join(config_data.get("default_directory"), folder, car), x.get("starttime"),
                                                   x.get("endtime"), x.get("channel"), x.get("timezone"), x.get("fileName"))
-                    # else:
-                    #     print(f"[{car}][{file}] Nao ha dados do arquivo nas dastas solicitadas")
             
             elif folder == "download":
                 download_task_data = api_consumer.get_download_task(vehicle_id, dates[0], dates[-1])
@@ -195,12 +195,14 @@ class Main():
             for car_information in api_vehicles_data:
                 deviceSerial = car_information.get("deviceList")[0].get("deviceSerial")
                 if car_information.get("plate") == car or deviceSerial == car:
+                    print(f'Carro {car} registrado no banco')
                     self.db.register_car(car, car_information.get("_id"))
 
         #Registra todos os videos pertencentes aos carros no banco
         dates = [(datetime.datetime.now() - datetime.timedelta(days=i)).strftime('%Y-%m-%d') for i in range(config_data.get("days_to_process")-1, -1, -1)]
         registered_cars = self.db.get_all_cars()
         for information in registered_cars:
+            print(f"Registrando os videos no banco do carro : {information[0]}")
             self.process_car_videos(api_consumer, config_data, information[0], information[1], dates)
 
         #Inicia processo de particionamento e organização dos vídeos

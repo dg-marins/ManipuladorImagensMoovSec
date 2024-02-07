@@ -47,7 +47,7 @@ class FileProcesser():
             target_file = os.path.join(destination_path, target_file_formatted_time + '.mp4')
 
             if os.path.isfile(target_file):
-                print(f'Existe: {target_file}')
+                print(f'Arquivo existe: {target_file}')
                 continue
 
             tempo_inicio_convertido = datetime.timedelta(seconds = t1)
@@ -60,6 +60,7 @@ class FileProcesser():
             p = subprocess.Popen(cmnd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             out, err =  p.communicate()
 
+            print(f"Fragmento criado: {target_file}")
             lista_novos_arquivos.append(target_file)
             
             # Adiciona 1 minuto ao nome do arquivo
