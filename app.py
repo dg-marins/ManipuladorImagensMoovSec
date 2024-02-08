@@ -228,4 +228,5 @@ if __name__ == '__main__':
         #     time.sleep(3)
 
         #Aguarda 30 minutos ate o proximo loop
+        print(f"Aguardando próximo loop")
         time.sleep(1800)
