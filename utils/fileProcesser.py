@@ -48,6 +48,9 @@ class FileProcesser():
 
             if os.path.isfile(target_file):
                 print(f'Arquivo existe: {target_file}')
+                 # Adiciona 1 minuto ao nome do arquivo
+                time = time + datetime.timedelta(minutes=1)
+                formatted_time = time.strftime("%Y%m%d%H%M%S")
                 continue
 
             tempo_inicio_convertido = datetime.timedelta(seconds = t1)
