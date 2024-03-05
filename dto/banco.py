@@ -80,9 +80,23 @@ class Database():
     def registrar_video(self, info_carro_id, filename):
         with self.conn:
             cursor = self.conn.cursor()
-            cursor.execute('''
-                INSERT INTO videos (info_carro_id, filename) VALUES (?, ?)
-            ''', (info_carro_id, filename))
+            
+            # Verificar se o nome de arquivo já existe na tabela
+            cursor.execute('SELECT COUNT(*) FROM videos WHERE filename = ?', (filename,))
+            result = cursor.fetchone()
+            
+            if result[0] == 0:  # Se não houver nenhum registro com o mesmo nome de arquivo
+                try:
+                    cursor.execute('''
+                        INSERT INTO videos (info_carro_id, filename) VALUES (?, ?)
+                    ''', (info_carro_id, filename))
+                    self.conn.commit()
+                except sqlite3.IntegrityError:
+                    print(f"O arquivo {filename} já existe na tabela 'videos'.")
+                    pass
+            else:
+                print(f"O arquivo {filename} já existe na tabela 'videos'.")
+                pass
 
     def carros_processados(self, processed = 'NO'):
         with self.conn:
