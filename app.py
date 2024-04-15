@@ -138,6 +138,10 @@ class Main():
                     task_list = download_task_data.get("list")
                 else:
                     task_list = download_task_data
+
+                if task_list == None:
+                    print(f'Arquivo não reconhecido na API')
+                    return
                 
                 for file in source_car_path_files:
                     for data in task_list:
