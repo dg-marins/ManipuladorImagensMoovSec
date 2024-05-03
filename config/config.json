@@ -17,7 +17,7 @@
     "dias_para_manter": 7,
 
     "logging_config_file": "config/logging.conf",
-    "logging_level": "INFO",
+    "logging_level": "info",
     "logging_write_file": "log/manipuladorMoovSec.log"
 
 }
