@@ -180,8 +180,6 @@ class Main():
         fileConfig(fname = os.path.join(sourcePath, config_data.get("logging_config_file")), disable_existing_loggers=False)
         self.logger = logging.getLogger(config_data.get("logging_level"))
 
-        self.logger.info("Mensagem informativa")
-
         api_consumer = Consumer(config_data.get("host_ip"), config_data.get("host_moovsec_port"),
                                 config_data.get("host_iot_handler_port"), config_data.get("user"), config_data.get("password"))
         self.db = Database()
