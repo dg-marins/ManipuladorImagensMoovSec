@@ -3,13 +3,14 @@ import shutil
 import datetime
 import subprocess
 from os.path import join
+import logging
 # from moviepy.editor import VideoFileClip
 # from moviepy.video.io.ffmpeg_tools import ffmpeg_extract_subclip
 
 class FileProcesser():
 
     def __init__(self):
-        pass
+        logger = logging.getLogger(__name__)
 
     def calculate_time_difference(self, start_time_str, end_time_str):
         start_time = datetime.datetime.strptime(start_time_str, '%H:%M:%S')

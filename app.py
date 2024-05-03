@@ -6,6 +6,9 @@ from utils.fileProcesser import FileProcesser
 import os
 import json
 import datetime
+import logging
+from logging.config import fileConfig
+
 
 class Main():
 
@@ -169,6 +172,16 @@ class Main():
     
     def main(self):
         config_data = self.read_json()
+
+        sourcePath = os.path.dirname(os.path.realpath(__file__))
+        
+        # Configura o logging
+        logging.log_file = os.path.join(sourcePath, config_data.get("logging_write_file"))
+        fileConfig(fname = os.path.join(sourcePath, config_data.get("logging_config_file")), disable_existing_loggers=False)
+        self.logger = logging.getLogger(config_data.get("logging_level"))
+
+        self.logger.info("Mensagem informativa")
+
         api_consumer = Consumer(config_data.get("host_ip"), config_data.get("host_moovsec_port"),
                                 config_data.get("host_iot_handler_port"), config_data.get("user"), config_data.get("password"))
         self.db = Database()

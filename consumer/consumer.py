@@ -1,4 +1,5 @@
 import requests
+import logging
 
 class Consumer:
     def __init__(self, host_ip, host_moovsec_port, host_iot_handler_port, user, password) -> None:
@@ -8,6 +9,7 @@ class Consumer:
 
         self.Moovsec_Url = f'http://{self.HostIp}:{host_moovsec_port}'
         self.Iot_Handler_Url = f'http://{self.HostIp}:{host_iot_handler_port}'
+        self.logger = logging.getLogger(__name__)
 
     def get_api_token(self):
         url = f'{self.Moovsec_Url}/auth/login'
