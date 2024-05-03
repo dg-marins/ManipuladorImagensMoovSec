@@ -14,6 +14,10 @@
     "folders_to_process": ["backup", "download"],
     "destination_directory": "C:/Users/Douglas/Desktop/home/publico/imagens",
 
-    "dias_para_manter": 7
+    "dias_para_manter": 7,
+
+    "logging_config_file": "config/logging.conf",
+    "logging_level": "INFO",
+    "logging_write_file": "log/manipuladorMoovSec.log"
 
 }
