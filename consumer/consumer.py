@@ -26,7 +26,7 @@ class Consumer:
             return data.get("data")
 
         except requests.exceptions.RequestException as e:
-            print(f'Erro na requisição {e}')
+            self.logger.warning(f'Erro na requisição {e}')
 
     def get_car_records_url(self, car, date, source_records, stream_type):
         url = f'{self.Iot_Handler_Url}/dvr/{car}/mediarecords?YearMonthDay={date}&source={source_records}&streamType={stream_type}'
@@ -42,7 +42,7 @@ class Consumer:
             response.raise_for_status()
         
         except requests.exceptions.RequestException as e:
-            print(f'Erro na requisição {e}')
+           self.logger.warning(f'Erro na requisição {e}')
 
         data = response.json()
         return data.get("data")
@@ -61,7 +61,7 @@ class Consumer:
             return data.get("data")
 
         except requests.exceptions.RequestException as e:
-            print(f'Erro na requisição {e}')
+            self.logger.warning(f'Erro na requisição {e}')
 
     def get_download_task(self, vehicleID, inicialDate, finalDate):
         
@@ -90,4 +90,4 @@ class Consumer:
             return data.get("data")
 
         except requests.exceptions.RequestException as e:
-            print(f'Erro na requisição {e}')
+            self.logger.warning(f'Erro na requisição {e}')
