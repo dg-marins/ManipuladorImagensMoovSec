@@ -210,14 +210,14 @@ class Main():
             for car_information in api_vehicles_data:
                 deviceSerial = car_information.get("deviceList")[0].get("deviceSerial")
                 if car_information.get("plate") == car or deviceSerial == car:
-                    self.logger(f'Carro {car} registrado no banco')
+                    self.logger.info(f'Carro {car} registrado no banco')
                     self.db.register_car(car, car_information.get("_id"))
 
         #Registra todos os videos pertencentes aos carros no banco
         dates = [(datetime.datetime.now() - datetime.timedelta(days=i)).strftime('%Y-%m-%d') for i in range(config_data.get("days_to_process")-1, -1, -1)]
         registered_cars = self.db.get_all_cars()
         for information in registered_cars:
-            self.logger(f"Registrando os videos no banco do carro : {information[0]}")
+            self.logger.info(f"Registrando os videos no banco do carro : {information[0]}")
             self.process_car_videos(api_consumer, config_data, information[0], information[1], dates)
 
         #Inicia processo de particionamento e organização dos vídeos
