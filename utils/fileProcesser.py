@@ -1,11 +1,8 @@
 import os
-import shutil
 import datetime
 import subprocess
 from os.path import join
 import logging
-# from moviepy.editor import VideoFileClip
-# from moviepy.video.io.ffmpeg_tools import ffmpeg_extract_subclip
 
 class FileProcesser():
 
