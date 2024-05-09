@@ -212,6 +212,8 @@ class Main():
                 if car_information.get("plate") == car or deviceSerial == car:
                     self.logger.info(f'Carro {car} registrado no banco')
                     self.db.register_car(car, car_information.get("_id"))
+                else:
+                    self.logger.warning(f'Carro {car} não encontrado no moovsec')
 
         #Registra todos os videos pertencentes aos carros no banco
         dates = [(datetime.datetime.now() - datetime.timedelta(days=i)).strftime('%Y-%m-%d') for i in range(config_data.get("days_to_process")-1, -1, -1)]
