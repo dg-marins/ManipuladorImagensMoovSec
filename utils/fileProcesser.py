@@ -35,6 +35,8 @@ class FileProcesser():
 
         lista_novos_arquivos = []
 
+        t1 = 0
+
         for x in range(video_duration_minutes):
         
             t1 = x * 60
