@@ -1,15 +1,13 @@
 import os
-import shutil
 import datetime
 import subprocess
 from os.path import join
-# from moviepy.editor import VideoFileClip
-# from moviepy.video.io.ffmpeg_tools import ffmpeg_extract_subclip
+import logging
 
 class FileProcesser():
 
     def __init__(self):
-        pass
+        self.logger = logging.getLogger(__name__)
 
     def calculate_time_difference(self, start_time_str, end_time_str):
         start_time = datetime.datetime.strptime(start_time_str, '%H:%M:%S')
@@ -37,6 +35,8 @@ class FileProcesser():
 
         lista_novos_arquivos = []
 
+        t1 = 0
+
         for x in range(video_duration_minutes):
         
             t1 = x * 60
@@ -47,8 +47,8 @@ class FileProcesser():
             target_file = os.path.join(destination_path, target_file_formatted_time + '.mp4')
 
             if os.path.isfile(target_file):
-                print(f'Arquivo existe: {target_file}')
-                 # Adiciona 1 minuto ao nome do arquivo
+                self.logger.info(f'Arquivo existe: {target_file}')
+                # Adiciona 1 minuto ao nome do arquivo
                 time = time + datetime.timedelta(minutes=1)
                 formatted_time = time.strftime("%Y%m%d%H%M%S")
                 continue
@@ -63,7 +63,7 @@ class FileProcesser():
             p = subprocess.Popen(cmnd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             out, err =  p.communicate()
 
-            print(f"Fragmento criado: {target_file}")
+            self.logger.info(f"Fragmento criado: {target_file}")
             lista_novos_arquivos.append(target_file)
             
             # Adiciona 1 minuto ao nome do arquivo
@@ -79,7 +79,7 @@ class FileProcesser():
             target_file = os.path.join(destination_path, target_file_formatted_time + '.mp4')
 
             if os.path.isfile(target_file):
-                print(f'Existe: {target_file}')
+                self.logger.info(f'Existe: {target_file}')
                 return lista_novos_arquivos
 
             tempo_inicio_convertido = datetime.timedelta(seconds = t1)
@@ -98,5 +98,5 @@ class FileProcesser():
             time = time + datetime.timedelta(minutes=1)
             formatted_time = time.strftime("%Y%m%d%H%M%S")
 
-        print(f'{os.path.basename(full_file_path)} particionado')
+        self.logger.info(f'{os.path.basename(full_file_path)} particionado')
         return lista_novos_arquivos

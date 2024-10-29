@@ -6,6 +6,9 @@ from utils.fileProcesser import FileProcesser
 import os
 import json
 import datetime
+import logging
+from logging.config import fileConfig
+
 
 class Main():
 
@@ -90,7 +93,7 @@ class Main():
         if not os.path.isdir(destination_path):
             os.makedirs(destination_path)
 
-        print(f"Iniciando processo de particionamento file {unprocessed_file_information[6]}")
+        self.logger.info(f"Iniciando processo de particionamento file {unprocessed_file_information[6]}")
         new_videos_created = self.fp.cortar_video_por_minuto(os.path.join(unprocessed_file_information[8], unprocessed_file_information[6]),
                                    destination_path, date, start_time, final_time)
         
@@ -107,9 +110,10 @@ class Main():
             if not os.path.isdir(os.path.join(config_data.get("default_directory"), folder, car)):
                 continue
             
+            source_car_path = os.path.join(config_data.get("default_directory"), folder, car)
             source_car_path_files = os.listdir(os.path.join(config_data.get("default_directory"), folder, car))
             if len(source_car_path_files) <= 0:
-                (f"[{car}] Não há videos descarregados")
+                (f"[{car}] Não há videos descarregados. Videos: {source_car_path_files} , Path: {source_car_path}")
                 return
 
             if folder == "backup":
@@ -125,7 +129,7 @@ class Main():
                     if x:
                         destination_path = os.path.join(config_data.get("destination_directory"), car, "camera" + str(x.get("channel")), self.get_date(x.get("starttime")))
 
-                        print(f"Arquivo {file} do carro {car} registrado no banco")
+                        self.logger.info(f"Arquivo {file} do carro {car} registrado no banco")
 
                         self.set_unprocessed_file(destination_path, self.db.get_car_id_by_name(car), os.path.join(config_data.get("default_directory"), folder, car), x.get("starttime"),
                                                   x.get("endtime"), x.get("channel"), x.get("timezone"), x.get("fileName"))
@@ -140,7 +144,7 @@ class Main():
                     task_list = download_task_data
 
                 if task_list == None:
-                    print(f'Arquivo não reconhecido na API')
+                    self.logger.warning(f'Arquivo não reconhecido na API')
                     return
                 
                 for file in source_car_path_files:
@@ -163,12 +167,20 @@ class Main():
         
         if os.path.isfile(file_path):
             os.remove(file_path)
-            print(f'Removido: {file_path}')
+            self.logger.info(f'Removido: {file_path}')
             self.db.set_erased_status(event_id)
     
     
     def main(self):
         config_data = self.read_json()
+
+        sourcePath = os.path.dirname(os.path.realpath(__file__))
+        
+        # Configura o logging
+        logging.log_file = os.path.join(sourcePath, config_data.get("logging_write_file"))
+        fileConfig(fname = os.path.join(sourcePath, config_data.get("logging_config_file")), disable_existing_loggers=False)
+        self.logger = logging.getLogger(config_data.get("logging_level"))
+
         api_consumer = Consumer(config_data.get("host_ip"), config_data.get("host_moovsec_port"),
                                 config_data.get("host_iot_handler_port"), config_data.get("user"), config_data.get("password"))
         self.db = Database()
@@ -177,36 +189,38 @@ class Main():
         self.fp = FileProcesser()
 
         #Registra os carros dos diretorio no banco
-        print(f'Registrando carros no banco ...')
+        self.logger.info(f'Registrando carros no banco ...')
         all_cars = []
         for directory in config_data.get("folders_to_process"):
             itens_in_directory = os.listdir(os.path.join(config_data.get("default_directory"), directory))
-            for item in itens_in_directory:
-                if not os.path.isdir(os.path.join(config_data.get("default_directory"), directory, item)):
-                    itens_in_directory.remove(item)
-
-            all_cars.append(itens_in_directory)
-            
-        cars_unified = []
-        for sublist in all_cars:
-            cars_unified.extend(sublist)
+            for car in itens_in_directory:
+                item_path = os.path.join(config_data.get("default_directory"), directory, car)
+                if os.path.isdir(item_path) and not os.path.isfile(item_path):
+                    all_cars.append(car)
         
-        cars = list(set(cars_unified))
-
         api_vehicles_data = api_consumer.get_all_vehicles_information()
 
-        for car in cars:
+        for car in all_cars:
+            car_found = False
+
             for car_information in api_vehicles_data:
                 deviceSerial = car_information.get("deviceList")[0].get("deviceSerial")
-                if car_information.get("plate") == car or deviceSerial == car:
-                    print(f'Carro {car} registrado no banco')
+                plate = car_information.get("plate")
+
+                if plate == car or deviceSerial == car:
+                    self.logger.info(f'Carro {car} registrado no banco')
                     self.db.register_car(car, car_information.get("_id"))
+                    car_found = True
+                    break
+            
+            if not car_found:
+                self.logger.warning(f'Carro {car} não encontrado no moovsec')
 
         #Registra todos os videos pertencentes aos carros no banco
         dates = [(datetime.datetime.now() - datetime.timedelta(days=i)).strftime('%Y-%m-%d') for i in range(config_data.get("days_to_process")-1, -1, -1)]
         registered_cars = self.db.get_all_cars()
         for information in registered_cars:
-            print(f"Registrando os videos no banco do carro : {information[0]}")
+            self.logger.info(f"Registrando os videos no banco do carro : {information[0]}")
             self.process_car_videos(api_consumer, config_data, information[0], information[1], dates)
 
         #Inicia processo de particionamento e organização dos vídeos
@@ -219,18 +233,13 @@ class Main():
         for file in files_to_delete:
             self.delete_file(file)
 
+        self.logger.info("Aguardando próximo loop")
+
 if __name__ == '__main__':
 
     mr = Main()
     
     while True:
-        # try:
-        mr.main()
         
-        # except Exception as e:
-        #     print(f'Erro: {e}')
-        #     time.sleep(3)
-
-        #Aguarda 30 minutos ate o proximo loop
-        print(f"Aguardando próximo loop")
+        mr.main()
         time.sleep(1800)

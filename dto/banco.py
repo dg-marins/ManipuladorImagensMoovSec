@@ -1,5 +1,6 @@
 import sqlite3
 import os
+import logging
 
 class Database():
     # Conectar-se ao banco de dados (ou criar um novo se não existir)
@@ -8,6 +9,7 @@ class Database():
 
         self.databse_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "carros.db")
         self.conn = sqlite3.connect(self.databse_path)
+        self.logger = logging.getLogger(__name__)
 
     
     def create_database(self):
@@ -92,10 +94,10 @@ class Database():
                     ''', (info_carro_id, filename))
                     self.conn.commit()
                 except sqlite3.IntegrityError:
-                    print(f"O arquivo {filename} já existe na tabela 'videos'.")
+                    self.logger.warning(f"O arquivo {filename} já existe na tabela 'videos'.")
                     pass
             else:
-                print(f"O arquivo {filename} já existe na tabela 'videos'.")
+                self.logger.warning(f"O arquivo {filename} já existe na tabela 'videos'.")
                 pass
 
     def carros_processados(self, processed = 'NO'):
