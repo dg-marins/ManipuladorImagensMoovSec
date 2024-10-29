@@ -106,8 +106,9 @@ class Main():
     
         #Lista os arquivos encontrados no diretorio do carro
         for folder in config_data.get("folders_to_process"):
+            car_directory = os.path.join(config_data.get("default_directory"), folder, car)
 
-            if not os.path.isdir(os.path.join(config_data.get("default_directory"), folder, car)):
+            if not os.path.isdir(car_directory):
                 continue
             
             source_car_path = os.path.join(config_data.get("default_directory"), folder, car)
@@ -151,7 +152,7 @@ class Main():
                     for data in task_list:
                         taskInfo = data.get("taskInfo")
 
-                        if taskInfo.get("status") == "SUCCESS" and data.get("vehiclePlate") == car:
+                        if taskInfo.get("status") == "SUCCESS" and data.get("vehiclePlate") or data.get("deviceSerial") == car:
                             
                             media_info = taskInfo.get("media")
 
@@ -203,6 +204,7 @@ class Main():
         for car in all_cars:
             car_found = False
 
+            # Aidicionar verificaçao, se já existir no self.bd passa pro proximo
             for car_information in api_vehicles_data:
                 deviceSerial = car_information.get("deviceList")[0].get("deviceSerial")
                 plate = car_information.get("plate")
