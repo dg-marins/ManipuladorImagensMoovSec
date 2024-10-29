@@ -110,9 +110,10 @@ class Main():
             if not os.path.isdir(os.path.join(config_data.get("default_directory"), folder, car)):
                 continue
             
+            source_car_path = os.path.join(config_data.get("default_directory"), folder, car)
             source_car_path_files = os.listdir(os.path.join(config_data.get("default_directory"), folder, car))
             if len(source_car_path_files) <= 0:
-                (f"[{car}] Não há videos descarregados")
+                (f"[{car}] Não há videos descarregados. Videos: {source_car_path_files} , Path: {source_car_path}")
                 return
 
             if folder == "backup":
@@ -192,28 +193,28 @@ class Main():
         all_cars = []
         for directory in config_data.get("folders_to_process"):
             itens_in_directory = os.listdir(os.path.join(config_data.get("default_directory"), directory))
-            for item in itens_in_directory:
-                if not os.path.isdir(os.path.join(config_data.get("default_directory"), directory, item)):
-                    itens_in_directory.remove(item)
-
-            all_cars.append(itens_in_directory)
-            
-        cars_unified = []
-        for sublist in all_cars:
-            cars_unified.extend(sublist)
+            for car in itens_in_directory:
+                item_path = os.path.join(config_data.get("default_directory"), directory, car)
+                if os.path.isdir(item_path) and not os.path.isfile(item_path):
+                    all_cars.append(car)
         
-        cars = list(set(cars_unified))
-
         api_vehicles_data = api_consumer.get_all_vehicles_information()
 
-        for car in cars:
+        for car in all_cars:
+            car_found = False
+
             for car_information in api_vehicles_data:
                 deviceSerial = car_information.get("deviceList")[0].get("deviceSerial")
-                if car_information.get("plate") == car or deviceSerial == car:
+                plate = car_information.get("plate")
+
+                if plate == car or deviceSerial == car:
                     self.logger.info(f'Carro {car} registrado no banco')
                     self.db.register_car(car, car_information.get("_id"))
-                else:
-                    self.logger.warning(f'Carro {car} não encontrado no moovsec')
+                    car_found = True
+                    break
+            
+            if not car_found:
+                self.logger.warning(f'Carro {car} não encontrado no moovsec')
 
         #Registra todos os videos pertencentes aos carros no banco
         dates = [(datetime.datetime.now() - datetime.timedelta(days=i)).strftime('%Y-%m-%d') for i in range(config_data.get("days_to_process")-1, -1, -1)]
