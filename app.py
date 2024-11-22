@@ -206,14 +206,19 @@ class Main():
 
             # Aidicionar verificaçao, se já existir no self.bd passa pro proximo
             for car_information in api_vehicles_data:
-                deviceSerial = car_information.get("deviceList")[0].get("deviceSerial")
-                plate = car_information.get("plate")
+                device_list = car_information.get("deviceList", [])
+                
+                if device_list and len(device_list) > 0:
+                    device_serial = device_list[0].get("deviceSerial")
+                
+                    plate = car_information.get("plate")
 
-                if plate == car or deviceSerial == car:
-                    self.logger.info(f'Carro {car} registrado no banco')
-                    self.db.register_car(car, car_information.get("_id"))
-                    car_found = True
-                    break
+                    if plate == car or device_serial == car:
+                        self.logger.debug(f"Registando carro {car}")
+                        self.logger.info(f'Carro {car} registrado no banco')
+                        self.db.register_car(car, car_information.get("_id"))
+                        car_found = True
+                        break
             
             if not car_found:
                 self.logger.warning(f'Carro {car} não encontrado no moovsec')
