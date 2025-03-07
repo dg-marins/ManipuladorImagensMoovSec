@@ -89,7 +89,7 @@ class Main():
         start_time = self.convert_utc_to_local_and_get_time(utc_start_time, unprocessed_file_information[5])
         final_time = self.convert_utc_to_local_and_get_time(utc_final_time, unprocessed_file_information[5])
         destination_path = unprocessed_file_information[9]
-        
+        print(f"Destination Path: {destination_path}")
         if not os.path.isdir(destination_path):
             os.makedirs(destination_path)
 
@@ -107,7 +107,6 @@ class Main():
         #Lista os arquivos encontrados no diretorio do carro
         for folder in config_data.get("folders_to_process"):
             car_directory = os.path.join(config_data.get("default_directory"), folder, car)
-
             if not os.path.isdir(car_directory):
                 continue
             
@@ -122,6 +121,7 @@ class Main():
                 #Pega videos encontrador na API com as datas informadas
                 dict_unified_api_informations = self.get_videos_found_in_api(api_consumer, config_data, car, dates)
                 if dict_unified_api_informations == None:
+                    self.logger.error(f"Lista de arquivos do moovsec vazio")
                     return
                 
                 #Compara se o arquivo do diretorio encontra-se no registo da API
@@ -134,11 +134,14 @@ class Main():
 
                         self.set_unprocessed_file(destination_path, self.db.get_car_id_by_name(car), os.path.join(config_data.get("default_directory"), folder, car), x.get("starttime"),
                                                   x.get("endtime"), x.get("channel"), x.get("timezone"), x.get("fileName"))
-            
+                    else:
+                        self.logger.warning(f"O arquivo {file} não foi encontrado no moovsec")
+
             elif folder == "download":
+                print("~> Download\n\n\n\n")
+
                 download_task_data = api_consumer.get_download_task(vehicle_id, dates[0], dates[-1])
 
-                
                 if isinstance(download_task_data, dict):
                     task_list = download_task_data.get("list")
                 else:
@@ -151,16 +154,14 @@ class Main():
                 for file in source_car_path_files:
                     for data in task_list:
                         taskInfo = data.get("taskInfo")
-
                         if taskInfo.get("status") == "SUCCESS" and data.get("vehiclePlate") or data.get("deviceSerial") == car:
-                            
                             media_info = taskInfo.get("media")
 
                             for x in media_info:
                                 if x.get("fileName") and x.get("fileName"):
                                     destination_path = os.path.join(config_data.get("destination_directory"), car, "camera" + str(data.get("channels")[0]), self.get_date(x.get("startTime")))
                                     self.set_unprocessed_file(destination_path, self.db.get_car_id_by_name(car), os.path.join(config_data.get("default_directory"), folder, car), 
-                                                        x.get("startTime"), x.get("endTime"), data.get("channels")[0], data.get("timezone"), x.get("fileName"))
+                                                        x.get("startTime"), x.get("endTime"), x.get("channel"), data.get("timezone"), x.get("fileName"))
 
     def delete_file(self, file_information):
         event_id = file_information[0]
@@ -233,6 +234,7 @@ class Main():
         #Inicia processo de particionamento e organização dos vídeos
         unprocessed_files = self.db.get_unprocessed_info()
         for unprocessed_file_information in unprocessed_files:
+            print(f"Iniciando Particionamento: {unprocessed_file_information}")
             self.process_unprocessed_file(unprocessed_file_information)
 
         # #Inicia processo de limpeza dos vídeos processados
