@@ -32,47 +32,52 @@ class FileProcesser():
         time = datetime.datetime.strptime(date + ' ' + start_time, FMT)
         formatted_time = time.strftime("%Y%m%d%H%M%S")  # Formata para "%Y%m%d%H%M%S"
     
-
         lista_novos_arquivos = []
 
         t1 = 0
 
-        for x in range(video_duration_minutes):
-        
-            t1 = x * 60
-            t2 = t1 + 60
+        if video_duration_minutes > 0:
 
-            target_file_formatted_time = formatted_time  # Salva o nome formatado atual
+            for x in range(video_duration_minutes):
+            
+                t1 = x * 60
+                t2 = t1 + 60
 
-            target_file = os.path.join(destination_path, target_file_formatted_time + '.mp4')
+                target_file_formatted_time = formatted_time  # Salva o nome formatado atual
 
-            if os.path.isfile(target_file):
-                self.logger.info(f'Arquivo existe: {target_file}')
+                target_file = os.path.join(destination_path, target_file_formatted_time + '.mp4')
+
+                if os.path.isfile(target_file):
+                    self.logger.info(f'Arquivo existe: {target_file}')
+                    # Adiciona 1 minuto ao nome do arquivo
+                    time = time + datetime.timedelta(minutes=1)
+                    formatted_time = time.strftime("%Y%m%d%H%M%S")
+                    continue
+
+                tempo_inicio_convertido = datetime.timedelta(seconds = t1)
+                tempo_inicio_formatado = datetime.datetime.strptime(str(tempo_inicio_convertido), "%H:%M:%S").time()
+
+                tempo_fim_convertido = datetime.timedelta(seconds = t2)
+                tempo_fim_formatado = datetime.datetime.strptime(str(tempo_fim_convertido), "%H:%M:%S").time()
+
+                cmnd = ['ffmpeg', '-i', full_file_path, '-b:v', '64k', '-bufsize', '64k', '-ss', str(tempo_inicio_formatado), '-to', str(tempo_fim_formatado), '-c', 'copy', target_file]
+                p = subprocess.Popen(cmnd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                out, err =  p.communicate()
+
+                self.logger.info(f"Fragmento criado: {target_file}")
+                lista_novos_arquivos.append(target_file)
+                
                 # Adiciona 1 minuto ao nome do arquivo
                 time = time + datetime.timedelta(minutes=1)
                 formatted_time = time.strftime("%Y%m%d%H%M%S")
-                continue
-
-            tempo_inicio_convertido = datetime.timedelta(seconds = t1)
-            tempo_inicio_formatado = datetime.datetime.strptime(str(tempo_inicio_convertido), "%H:%M:%S").time()
-
-            tempo_fim_convertido = datetime.timedelta(seconds = t2)
-            tempo_fim_formatado = datetime.datetime.strptime(str(tempo_fim_convertido), "%H:%M:%S").time()
-
-            cmnd = ['ffmpeg', '-i', full_file_path, '-b:v', '64k', '-bufsize', '64k', '-ss', str(tempo_inicio_formatado), '-to', str(tempo_fim_formatado), '-c', 'copy', target_file]
-            p = subprocess.Popen(cmnd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            out, err =  p.communicate()
-
-            self.logger.info(f"Fragmento criado: {target_file}")
-            lista_novos_arquivos.append(target_file)
-            
-            # Adiciona 1 minuto ao nome do arquivo
-            time = time + datetime.timedelta(minutes=1)
-            formatted_time = time.strftime("%Y%m%d%H%M%S")
         
         if video_duration_seconds > 0:
 
-            t1 = t1 + 60
+            if t1 == 0:
+                t1 = 0
+            else:
+                t1 = t1 + 60
+                
             t2 = t1 + video_duration_seconds
             target_file_formatted_time = formatted_time  # Salva o nome formatado atual
 
@@ -87,6 +92,8 @@ class FileProcesser():
 
             tempo_fim_convertido = datetime.timedelta(seconds = t2)
             tempo_fim_formatado = datetime.datetime.strptime(str(tempo_fim_convertido), "%H:%M:%S").time()
+
+
 
             cmnd = ['ffmpeg', '-i', full_file_path, '-b:v', '64k', '-bufsize', '64k', '-ss', str(tempo_inicio_formatado), '-to', str(tempo_fim_formatado), '-c', 'copy', target_file]
             p = subprocess.Popen(cmnd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
