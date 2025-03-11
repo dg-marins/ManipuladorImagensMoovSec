@@ -43,6 +43,9 @@ class Main():
     def convert_utc_to_local_and_get_time(self, utc_time, time_zone):
         utc_datetime = datetime.datetime.strptime(utc_time, '%Y-%m-%dT%H:%M:%SZ')
         
+        if not time_zone or time_zone == '':
+            time_zone = '-03:00'
+
         # Extrair o sinal (+ ou -) e o valor do fuso horário
         tz_sign = time_zone[0]
         tz_hours = int(time_zone[1:3])
@@ -151,6 +154,7 @@ class Main():
                     self.logger.warning(f'Arquivo não reconhecido na API')
                     return
                 
+                self.logger.info(f"AQUI ---->")
                 for file in source_car_path_files:
                     for data in task_list:
                         taskInfo = data.get("taskInfo")
