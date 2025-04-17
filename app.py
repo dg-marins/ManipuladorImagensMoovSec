@@ -92,7 +92,6 @@ class Main():
         start_time = self.convert_utc_to_local_and_get_time(utc_start_time, unprocessed_file_information[5])
         final_time = self.convert_utc_to_local_and_get_time(utc_final_time, unprocessed_file_information[5])
         destination_path = unprocessed_file_information[9]
-        print(f"Destination Path: {destination_path}")
         if not os.path.isdir(destination_path):
             os.makedirs(destination_path)
 
@@ -141,7 +140,6 @@ class Main():
                         self.logger.warning(f"O arquivo {file} não foi encontrado no moovsec")
 
             elif folder == "download":
-                print("~> Download\n\n\n\n")
 
                 download_task_data = api_consumer.get_download_task(vehicle_id, dates[0], dates[-1])
 
@@ -154,7 +152,6 @@ class Main():
                     self.logger.warning(f'Arquivo não reconhecido na API')
                     return
                 
-                self.logger.info(f"AQUI ---->")
                 for file in source_car_path_files:
                     for data in task_list:
                         taskInfo = data.get("taskInfo")
@@ -238,7 +235,6 @@ class Main():
         #Inicia processo de particionamento e organização dos vídeos
         unprocessed_files = self.db.get_unprocessed_info()
         for unprocessed_file_information in unprocessed_files:
-            print(f"Iniciando Particionamento: {unprocessed_file_information}")
             self.process_unprocessed_file(unprocessed_file_information)
 
         # #Inicia processo de limpeza dos vídeos processados
