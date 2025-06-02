@@ -160,7 +160,7 @@ class Main():
 
                             for x in media_info:
                                 if x.get("fileName") and x.get("fileName"):
-                                    destination_path = os.path.join(config_data.get("destination_directory"), car, "camera" + str(data.get("channels")[0]), self.get_date(x.get("startTime")))
+                                    destination_path = os.path.join(config_data.get("destination_directory"), car, "camera" + str(x.get("channel")), self.get_date(x.get("startTime")))
                                     self.set_unprocessed_file(destination_path, self.db.get_car_id_by_name(car), os.path.join(config_data.get("default_directory"), folder, car), 
                                                         x.get("startTime"), x.get("endTime"), x.get("channel"), data.get("timezone"), x.get("fileName"))
 
